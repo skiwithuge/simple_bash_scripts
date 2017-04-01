@@ -1,0 +1,36 @@
+#!/home/skiwithuge/anaconda2/bin/python
+##/usr/bin/env python
+
+from BeautifulSoup import BeautifulSoup as bs
+import requests
+import sys
+import re
+
+URL = 'http://www.wordreference.com/enit/'
+if len(sys.argv) <= 1:
+	print "insert at least one word"
+	exit()
+if len(sys.argv) == 3:
+	URL= URL+sys.argv[1]+"%20"+sys.argv[2]
+else:
+	URL= URL+sys.argv[1]
+
+#print URL
+r = requests.get(URL) 
+html = r.text.encode('utf-8','ignore')
+#print html
+parsed_html = bs(html)
+
+for l in parsed_html.body.findAll('td', attrs={'class':'ToWrd'}):
+	l = re.sub('<em.*<\/em>', '', str(l))
+	l = re.sub('<td class=\"ToWrd\">', '', l)
+	l = re.sub('</td>', '', l)
+	l = re.sub('<a title.*<\/a>', '', l)
+	l = re.sub('<span title.*<\/span>', '', l)
+	if l=="- ":
+		continue
+	if l==" ":
+		continue
+	if l=="Italiano":
+		continue
+	print l
