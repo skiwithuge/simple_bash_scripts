@@ -18,7 +18,8 @@ clean ram
 manually configure redshift to change the color of the screen
 #### rescin
 quick cinnamon restarter
-
+#### procmemory
+a script that calculates the max min and average RAM usage
 ## Installation
 add the permission "+x" to the files
 
