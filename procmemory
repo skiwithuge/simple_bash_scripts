@@ -1,26 +1,31 @@
 #!/bin/sh
 
-if [ $# -ne 2 ];
+if [ $# -lt 1 ];
 then
     echo "Invalid number of arguments"
-    echo "./procmemory <process name> <max RAM>"
+    echo "./procmemory <process name> [maxRAM]"
     exit 0
 fi
-
+process=$1
+limit=$2
 min=`cat /proc/meminfo | grep MemTotal | awk '{printf("%d\n",$2 / 1024)}'`
 max=-1
 sumavg=0
 count=0
+if [ $# -eq 1 ]; then
+    limit=$min
+fi
+
 
 while true;
 do
-	NAME=`pgrep $1`
+	NAME=`pgrep $process`
 	if [ ${#NAME} -gt 0 ]; then
 	    SIZE=$(pmap -x $NAME|grep total|awk '{sum+=$4} END{print sum;}')
-	    VSIZE=$(pmap $NAME|grep total|grep -o "[0-9]*"|awk '{sum+=$1} END{print sum;}')
+	    VSIZE=$(pmap $NAME|grep total|grep -o "[0-9]*"|awk '{sum+=$process} END{print sum;}')
 	    VSIZEMB=$((VSIZE/1024))
 	    SIZEMB=$((SIZE/1024))
-	    echo "Process= $1 Size = $SIZEMB MB, VSize = $VSIZEMB MB"
+	    echo "Process= $process Size = $SIZEMB MB, VSize = $VSIZEMB MB"
 	    if [ $max -lt $SIZEMB ]; then
 	    	max=$SIZEMB
 	    fi
@@ -29,8 +34,8 @@ do
 	    fi
 	    sumavg=`expr $sumavg + $SIZEMB`
 	    count=`expr $count + 1`
-	    if [ $SIZEMB -gt $2 ]; then
-	        printf "$1 has exceeded.\n"
+	    if [ $SIZEMB -gt $limit ]; then
+	        printf "$process memory has exceeded.\n"
 	    fi
 		avg=`expr $sumavg / $count`
 		trap "echo Min: $min MB, Max: $max MB, Avg: $avg MB; exit 0" 2
